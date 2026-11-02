@@ -37,6 +37,8 @@
   .stat div { background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px 14px; }
   .stat strong { font-size:22px; }
   .missing { color:var(--muted); line-height:1.8; }
+  .who { margin:-8px 0 4px; padding-left:120px; color:var(--muted); font-size:14px; }
+  @media (max-width:420px){ .who{ padding-left:0; } }
   .hidden { display:none; }
   .foot { margin-top:28px; font-size:13px; color:var(--muted); }
   .foot a { color:var(--muted); }
@@ -49,7 +51,7 @@
   <!-- 투표 화면 -->
   <section id="voteView">
     <h1>🍗 2-1반 학급단합 닭강정 파티</h1>
-    <p class="sub">먹고 싶은 맛을 하나 골라 주세요! 다시 투표하면 마지막 선택으로 바뀌어요.</p>
+    <p class="sub">닭강정은 <b>한 사람씩 따로</b> 주문해요. 여기서 <b>내가 고른 맛 그대로 내 닭강정이 주문</b>되니까, 친구 따라 고르지 말고 진짜 먹고 싶은 맛을 골라 주세요! 바꾸고 싶으면 다시 투표하면 마지막 선택으로 바뀌어요.</p>
 
     <label class="no" for="no">내 번호</label>
     <select id="no"><option value="">번호 선택</option></select>
@@ -62,11 +64,11 @@
 
   <!-- 결과 화면 (?result) -->
   <section id="resultView" class="hidden">
-    <h1>📊 닭강정 맛 투표 결과</h1>
-    <p class="sub">5초마다 자동으로 새로고침돼요.</p>
+    <h1>📊 닭강정 맛별 주문 현황</h1>
+    <p class="sub">한 사람씩 고른 맛으로 주문해요. 5초마다 자동으로 새로고침돼요.</p>
     <div class="stat">
       <div>참여 <strong id="cnt">0</strong>명 / <span id="total"></span>명</div>
-      <div>1위 <strong id="top">-</strong></div>
+      <div>가장 많은 맛 <strong id="top">-</strong></div>
     </div>
     <div class="bars" id="bars"></div>
     <p class="missing"><b>아직 안 한 번호:</b> <span id="missing">-</span></p>
@@ -134,7 +136,7 @@
         update();
       } else {
         const name = FLAVORS.find(f => f.id === picked).name;
-        msg.className = "msg ok"; msg.textContent = `${sel.value}번, '${name}'에 투표 완료! 🎉`;
+        msg.className = "msg ok"; msg.textContent = `${sel.value}번, 내 닭강정은 '${name}'으로 주문돼요! 🎉`;
         update();
       }
     };
@@ -157,8 +159,13 @@
       const pct = n ? Math.round(counts[f.id] / n * 100) : 0;
       const row = document.createElement("div");
       row.className = "bar-row";
-      row.innerHTML = `<b>${f.name}</b><div class="bar-bg"><div class="bar" style="background:${f.color}"></div></div><div class="num">${counts[f.id]}표 <small>${pct}%</small></div>`;
+      row.innerHTML = `<b>${f.name}</b><div class="bar-bg"><div class="bar" style="background:${f.color}"></div></div><div class="num">${counts[f.id]}개 <small>${pct}%</small></div>`;
       bars.appendChild(row);
+      const who = data.filter(r => r.flavor === f.id).map(r => r.student_no).sort((a, b) => a - b);
+      const list = document.createElement("div");
+      list.className = "who";
+      list.textContent = who.length ? who.join(", ") + "번" : "아직 없음";
+      bars.appendChild(list);
       requestAnimationFrame(() => row.querySelector(".bar").style.width = (max ? counts[f.id] / max * 100 : 0) + "%");
     });
     const voted = new Set(data.map(r => r.student_no));
